@@ -1,6 +1,4 @@
 #define QUEUE_KEY_AT 0x1332624
-#define PROCESS_TABLE 0x199542
-#define PROCESS_TABLE_SEM 0x7392871
 
 #include <stdio.h>
 #include <string.h>
@@ -11,7 +9,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "structs.h"
+#include "funcoes_compartilhadas.c"
 #include "semaphore.h"
+#include "hypercube.c"
+#include "fat_tree.c"
+#include "torus.c"
 
 Process *process_table;
 int job_counter = 1;
@@ -62,17 +64,16 @@ void cria_processos() {
       process_table[i].vizinho[3] = -1;
     }
   }
+  printf("gerentes de execução criados\n");
 }
 
-void hypercube() {}
-
-void checa_topoligia(char const topologia[]) {
+void executa_topoligia(char const topologia[]) {
   if (strcmp(topologia,"hypercube") == 0) {
     hypercube();
   } else if (strcmp(topologia,"torus") == 0) {
-    printf("torus\n");
+    torus();
   } else if (strcmp(topologia,"fat_tree") == 0) {
-    printf("fat_tree\n");
+    fat_tree();
   } else {
     printf("topologia não existente\n");
     exit(1);
@@ -80,11 +81,11 @@ void checa_topoligia(char const topologia[]) {
 }
 
 void run_delayed() {
-  printf("Mensagem recebida\n");
+  printf("%s Executada!\n", msg_received.program_name);
 }
 
 int main(int argc, char const *argv[]) {
-  int id_fila;
+  int id_fila, id;
 
   if (argc !=2 ) {
     printf("Quantidade de argumentos inválida\n");
@@ -93,16 +94,21 @@ int main(int argc, char const *argv[]) {
 
   cria_memoria_compartilhada();
   cria_processos();
-  checa_topoligia(argv[1]);
+  executa_topoligia(argv[1]);
 
   printf("Esperando por mensagem\n");
   while(1) {
     create_executa_postergado_queue(&id_fila);
     rcv_executa_postergado_msg(id_fila);
 
-    printf("Esperando %d segundo para executar: %s\n", msg_received.seconds_to_wait, msg_received.program_name);
-    sleep(msg_received.seconds_to_wait);
-    run_delayed();
+    id = fork();
+    if (id == 0) {
+      printf("Esperando %d segundo para executar: %s\n", msg_received.seconds_to_wait, msg_received.program_name);
+      sleep(msg_received.seconds_to_wait);
+      run_delayed();
+      exit(0);
+    }
+
   }
   return 0;
 }

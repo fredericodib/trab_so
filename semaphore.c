@@ -1,4 +1,4 @@
-#include "semaphore.hpp"
+#include "semaphore.h"
 
 struct sembuf operation[2];
 

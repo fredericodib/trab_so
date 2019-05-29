@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/msg.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "semaphore.h"
 
 
-int main(int argc, char const *argv[]) {
-  sleep(2);
-  sleep(1);
-  return 0;
-}
+void hypercube();
