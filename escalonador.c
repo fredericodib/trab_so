@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include "structs.h"
 #include "funcoes_compartilhadas.c"
-#include "semaphore.h"
+#include "semaphore.c"
 #include "hypercube.c"
 #include "fat_tree.c"
 #include "torus.c"
@@ -85,7 +85,9 @@ void run_delayed() {
 }
 
 int main(int argc, char const *argv[]) {
-  int id_fila, id;
+  int id_fila, id, job_counter_sem_id;
+
+  job_counter_sem_id = create_semaphore( JOB_COUNTER_SEM );
 
   if (argc !=2 ) {
     printf("Quantidade de argumentos inválida\n");
@@ -104,6 +106,10 @@ int main(int argc, char const *argv[]) {
     id = fork();
     if (id == 0) {
       printf("Esperando %d segundo para executar: %s\n", msg_received.seconds_to_wait, msg_received.program_name);
+      p_sem(job_counter_sem_id);
+      msg_received.job_number = job_counter;
+      job_counter++;
+      v_sem(job_counter_sem_id);
       sleep(msg_received.seconds_to_wait);
       run_delayed();
       exit(0);
