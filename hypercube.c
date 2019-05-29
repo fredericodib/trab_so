@@ -12,9 +12,19 @@
 
 Process *process_table;
 
+void recupera_memoria_compartilhada_hypercube() {
+  int process_table_id;
+  process_table_id = shmget( PROCESS_TABLE, 16 * sizeof(Process), 0700);
+  if (process_table_id < 0) {
+    printf("error ao criar memoria compartilhada\n");
+    exit(1);
+  }
+  process_table = (Process *) shmat(process_table_id, 0, 0777);
+}
+
 void hypercube() {
   printf("utilizando hypercube\n\n");
-  recupera_memoria_compartilhada(process_table);
+  recupera_memoria_compartilhada_hypercube();
   /* codigo */
 }
 

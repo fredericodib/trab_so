@@ -4,10 +4,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/msg.h>
-#include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
 #include <unistd.h>
+#include <signal.h>
 #include "structs.h"
 #include "funcoes_compartilhadas.c"
 #include "semaphore.c"
@@ -97,14 +98,55 @@ void executa_topoligia(char const topologia[]) {
   }
 }
 
+void reseta_semaforos_all() {
+  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, job_counter_sem_id;
+  process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
+  process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
+  current_job_sem_id = create_semaphore( CURRENT_JOB_SEM );
+  process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
+  job_counter_sem_id = create_semaphore( JOB_COUNTER_SEM );
+  delete_semaphore( process_free_sem_id );
+  delete_semaphore( process_job_done_sem_id );
+  delete_semaphore( current_job_sem_id );
+  delete_semaphore( process_table_sem_id );
+  delete_semaphore( job_counter_sem_id );
+}
+
 void run_delayed() {
-  printf("%s Executada!\n", msg_received.program_name);
+  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, pid;
+  process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
+  process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
+  current_job_sem_id = create_semaphore( CURRENT_JOB_SEM );
+  process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
+
+  p_sem(process_free_sem_id); /* se todos os semaforos estao livre, avança*/
+  
+  p_sem(current_job_sem_id); /* acessa current_job */
+  current_job->job = msg_received.job_number;
+  strcpy(current_job->exec_file, msg_received.program_name);
+  current_job->seconds_to_wait = msg_received.seconds_to_wait;
+  v_sem(current_job_sem_id); /* libera current_job */
+  
+  p_sem(process_table_sem_id); /* acessa tabela de processos */
+  pid = process_table[0].pid;
+  v_sem(process_table_sem_id); /* libera tabela de processos */
+
+  kill(pid, SIGUSR1);
+  
+  p_sem(process_job_done_sem_id); /* se o job terminou de ser executado, avança*/
+
+  p_sem(current_job_sem_id); /* acessa current_job */
+  printf("Job %d executado! arquivo: %s; tempo de espera: %d;\n\n", current_job->job, current_job->exec_file, current_job->seconds_to_wait);
+  v_sem(current_job_sem_id); /* libera current_job */
 }
 
 int main(int argc, char const *argv[]) {
-  int id_fila, id, job_counter_sem_id;
+  int id_fila, id, job_counter_sem_id, process_job_done_id;
 
+  reseta_semaforos_all();
   job_counter_sem_id = create_semaphore( JOB_COUNTER_SEM );
+  process_job_done_id = create_semaphore( PROCESS_JOB_DONE_SEM );
+  p_sem(process_job_done_id); /* inicializa como 0 */
 
   if (argc !=2 ) {
     printf("Quantidade de argumentos inválida\n");
@@ -115,7 +157,7 @@ int main(int argc, char const *argv[]) {
   cria_processos();
   executa_topoligia(argv[1]);
 
-  printf("Esperando por mensagem\n");
+  printf("Esperando por mensagem\n\n");
   while(1) {
     create_executa_postergado_queue(&id_fila);
     rcv_executa_postergado_msg(id_fila);

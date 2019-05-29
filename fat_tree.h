@@ -10,3 +10,4 @@
 
 
 void fat_tree();
+void recupera_memoria_compartilhada_fat_tree();

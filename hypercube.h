@@ -10,3 +10,4 @@
 
 
 void hypercube();
+void recupera_memoria_compartilhada_hypercube();

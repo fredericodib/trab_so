@@ -29,8 +29,11 @@ void v_sem(int sem) {
 // down
 void p_sem(int sem) {
   operation[0].sem_num = 0;
-  operation[0].sem_op = 1;
+  operation[0].sem_op = 0;
   operation[0].sem_flg = 0;
-  if ( semop(sem, operation, 1) < 0)
+  operation[1].sem_num = 0;
+  operation[1].sem_op = 1;
+  operation[1].sem_flg = 0;
+  if ( semop(sem, operation, 2) < 0)
     printf("erro no p=%d\n", errno);
 }

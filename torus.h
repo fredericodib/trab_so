@@ -10,3 +10,4 @@
 
 
 void torus();
+void recupera_memoria_compartilhada_torus();
