@@ -16,7 +16,8 @@
 #include "torus.c"
 
 Process *process_table;
-int job_counter = 1;
+int *job_counter;
+Job *current_job;
 Message msg_received;
 
 /* cria fila executa_postergado */
@@ -33,15 +34,31 @@ void rcv_executa_postergado_msg(int id_fila) {
   msgrcv(id_fila, &msg_received, sizeof(msg_received), 0, 0);
 }
 
-/* deixa process_table compartilhada */
+/* deixa process_table, job_counter e current_job compartilhadas */
 void cria_memoria_compartilhada() {
-  int process_table_id;
+  int process_table_id, job_counter_id, current_job_id;
+
   process_table_id = shmget( PROCESS_TABLE, 16 * sizeof(Process), IPC_CREAT | 0700);
   if (process_table_id < 0) {
-    printf("error ao criar memoria compartilhada\n");
+    printf("error ao criar memoria compartilhada PROCESS_TABLE\n");
     exit(1);
   }
   process_table = (Process *) shmat(process_table_id, 0, 0777);
+
+  job_counter_id = shmget( JOB_COUNTER, sizeof(int), IPC_CREAT | 0700);
+  if (job_counter_id < 0) {
+    printf("error ao criar memoria compartilhada JOB_COUNTER\n");
+    exit(1);
+  }
+  job_counter = (int *) shmat(job_counter_id, 0, 0777);
+  *job_counter = 1;
+
+  current_job_id = shmget( CURRENT_JOB, sizeof(Job), IPC_CREAT | 0700);
+  if (current_job_id < 0) {
+    printf("error ao criar memoria compartilhada CURRENT_JOB\n");
+    exit(1);
+  }
+  current_job = (Job *) shmat(current_job_id, 0, 0777);
 }
 
 /* cria gerentes e inicializa process_table */
@@ -107,14 +124,14 @@ int main(int argc, char const *argv[]) {
     if (id == 0) {
       printf("Esperando %d segundo para executar: %s\n", msg_received.seconds_to_wait, msg_received.program_name);
       p_sem(job_counter_sem_id);
-      msg_received.job_number = job_counter;
-      job_counter++;
+      msg_received.job_number = *job_counter;
+      *job_counter = *job_counter + 1;
       v_sem(job_counter_sem_id);
       sleep(msg_received.seconds_to_wait);
       run_delayed();
       exit(0);
     }
-
+    
   }
   return 0;
 }
