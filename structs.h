@@ -21,4 +21,5 @@ typedef struct process {
   long pid; /* Pid... */
   int status; /* Disponivel = 1; Ocupado = 0 */
   int vizinho[4]; /* Ligacoes do gerente  */
+  int recebeu; /* nao recebeu sinal = 1; recebeu mensagem = 0 */
 } Process;

@@ -6,6 +6,7 @@
 #define PROCESS_JOB_DONE_SEM 0x7492873
 #define JOB_COUNTER_SEM 0x7495871
 #define CURRENT_JOB_SEM 0x7435871
+#define TURNO_SEM 0x7464871
 
 #include <stdio.h>
 #include <string.h>

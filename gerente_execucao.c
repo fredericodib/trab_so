@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
+#include <time.h>
 #include "structs.h"
 #include "funcoes_compartilhadas.c"
 #include "semaphore.c"
@@ -35,6 +36,21 @@ void recupera_memoria_compartilhada_job() {
   current_job = (Job *) shmat(process_job_id, 0, 0777);
 }
 
+void avisa_gerentes() {
+  int process_table_sem_id, i, id;
+  process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
+  p_sem(process_table_sem_id); /* acessa tabela de processos */
+  for (i=0;i<4;i++) {
+    id = process_table[ge_id].vizinho[i];
+    if (id != -1) {
+      if (process_table[id].recebeu == 1) {
+        kill(process_table[id].pid, SIGUSR1);
+      }
+    }
+  }
+  v_sem(process_table_sem_id); /* libera tabela de processos */
+}
+
 int check_todos_os_processos_livres() {
   int i;
   for (i=0;i<16;i++) {
@@ -50,24 +66,38 @@ void muda_status(int status) {
   process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
   p_sem(process_table_sem_id); /* acessa tabela de processos */
   process_table[ge_id].status = status;
+  process_table[ge_id].recebeu = 0;
   v_sem(process_table_sem_id); /* libera tabela de processos */
 }
 
 void executa_arquivo() {
-  printf("\nJob %d começa a executar\n", current_job->job);
-  sleep(2);
+  int pid;
+  if (ge_id == 0) {
+    current_job->start_time = time(0);
+  }
+  printf("Job %d começa a executar\n", current_job->job);
+  pid = fork();
+  if (pid == 0) {
+    execl(current_job->exec_file, current_job->exec_file, (char *) 0);
+    exit(0);
+  }
+  wait(&pid);
+  printf("Job %d termina de executar\n", current_job->job);
 }
 
 void recebe_sinal(int signal) {
   int process_table_sem_id, process_free_sem_id, process_job_done_sem_id;
+  if (process_table[ge_id].recebeu == 0) {return ;}
   process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
   process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
   process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
   muda_status(0);
+  avisa_gerentes();
   executa_arquivo();
   muda_status(1);
   p_sem(process_table_sem_id); /* acessa tabela de processos */
   if (check_todos_os_processos_livres() == 1) {
+    current_job->finish_time = time(0);
     v_sem(process_free_sem_id);
     v_sem(process_job_done_sem_id);
   }

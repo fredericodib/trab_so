@@ -26,5 +26,84 @@ void torus() {
   printf("utilizando torus\n\n");
   recupera_memoria_compartilhada_torus();
   /* codigo */
+  process_table[0].vizinho[0] = 1;
+  process_table[0].vizinho[1] = 3;
+  process_table[0].vizinho[2] = 4;
+  process_table[0].vizinho[3] = 12;
+
+  process_table[1].vizinho[1] = 0;
+  process_table[1].vizinho[2] = 2;
+  process_table[1].vizinho[0] = 13;
+  process_table[1].vizinho[3] = 5;
+
+  process_table[2].vizinho[0] = 1;
+  process_table[2].vizinho[1] = 3;
+  process_table[2].vizinho[2] = 6;
+  process_table[2].vizinho[3] = 14;
+
+  process_table[3].vizinho[0] = 2;
+  process_table[3].vizinho[1] = 0;
+  process_table[3].vizinho[2] = 7;
+  process_table[3].vizinho[3] = 15;
+
+  process_table[4].vizinho[0] = 0;
+  process_table[4].vizinho[1] = 12;
+  process_table[4].vizinho[2] = 7;
+  process_table[4].vizinho[3] = 5;
+
+  process_table[5].vizinho[0] = 7;
+  process_table[5].vizinho[1] = 1;
+  process_table[5].vizinho[2] = 4;
+  process_table[5].vizinho[3] = 9;
+
+  process_table[6].vizinho[0] = 2;
+  process_table[6].vizinho[1] = 10;
+  process_table[6].vizinho[2] = 5;
+  process_table[6].vizinho[3] = 7;
+
+  process_table[7].vizinho[0] = 11;
+  process_table[7].vizinho[1] = 3;
+  process_table[7].vizinho[2] = 4;
+  process_table[7].vizinho[3] = 6;
+
+  process_table[8].vizinho[0] = 12;
+  process_table[8].vizinho[1] = 9;
+  process_table[8].vizinho[2] = 4;
+  process_table[8].vizinho[3] = 11;
+
+  process_table[9].vizinho[0] = 8;
+  process_table[9].vizinho[1] = 13;
+  process_table[9].vizinho[2] = 10;
+  process_table[9].vizinho[3] = 5;
+
+  process_table[10].vizinho[0] = 6;
+  process_table[10].vizinho[1] = 14;
+  process_table[10].vizinho[2] = 9;
+  process_table[10].vizinho[3] = 11;
+
+  process_table[11].vizinho[0] = 10;
+  process_table[11].vizinho[1] = 8;
+  process_table[11].vizinho[2] = 2;
+  process_table[11].vizinho[3] = 14;
+
+  process_table[12].vizinho[0] = 8;
+  process_table[12].vizinho[1] = 0;
+  process_table[12].vizinho[2] = 13;
+  process_table[12].vizinho[3] = 15;
+
+  process_table[13].vizinho[0] = 1;
+  process_table[13].vizinho[1] = 9;
+  process_table[13].vizinho[2] = 12;
+  process_table[13].vizinho[3] = 14;
+
+  process_table[14].vizinho[0] = 2;
+  process_table[14].vizinho[1] = 10;
+  process_table[14].vizinho[2] = 13;
+  process_table[14].vizinho[3] = 15;
+
+  process_table[15].vizinho[0] = 11;
+  process_table[15].vizinho[1] = 3;
+  process_table[15].vizinho[2] = 14;
+  process_table[15].vizinho[3] = 12;
 }
 

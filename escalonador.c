@@ -9,6 +9,7 @@
 #include <sys/ipc.h>
 #include <unistd.h>
 #include <signal.h>
+#include <time.h>
 #include "structs.h"
 #include "funcoes_compartilhadas.c"
 #include "semaphore.c"
@@ -76,6 +77,7 @@ void cria_processos() {
     } else {
       process_table[i].pid = pid;
       process_table[i].status = 1;
+      process_table[i].recebeu = 1;
       process_table[i].vizinho[0] = -1;
       process_table[i].vizinho[1] = -1;
       process_table[i].vizinho[2] = -1;
@@ -99,26 +101,30 @@ void executa_topoligia(char const topologia[]) {
 }
 
 void reseta_semaforos_all() {
-  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, job_counter_sem_id;
+  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, job_counter_sem_id, turno_sem_id;
   process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
   process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
   current_job_sem_id = create_semaphore( CURRENT_JOB_SEM );
   process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
   job_counter_sem_id = create_semaphore( JOB_COUNTER_SEM );
+  turno_sem_id = create_semaphore( TURNO_SEM );
   delete_semaphore( process_free_sem_id );
   delete_semaphore( process_job_done_sem_id );
   delete_semaphore( current_job_sem_id );
   delete_semaphore( process_table_sem_id );
   delete_semaphore( job_counter_sem_id );
+  delete_semaphore( turno_sem_id );
 }
 
 void run_delayed() {
-  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, pid;
+  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, pid, i, turno_sem_id;
   process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
   process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
   current_job_sem_id = create_semaphore( CURRENT_JOB_SEM );
   process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
+  turno_sem_id = create_semaphore( TURNO_SEM );
 
+  p_sem(turno_sem_id); /* Apenas uma thread do scalonador acessa por vez */
   p_sem(process_free_sem_id); /* se todos os semaforos estao livre, avança*/
   
   p_sem(current_job_sem_id); /* acessa current_job */
@@ -136,8 +142,12 @@ void run_delayed() {
   p_sem(process_job_done_sem_id); /* se o job terminou de ser executado, avança*/
 
   p_sem(current_job_sem_id); /* acessa current_job */
-  printf("Job %d executado! arquivo: %s; tempo de espera: %d;\n\n", current_job->job, current_job->exec_file, current_job->seconds_to_wait);
+  printf("\nJob %d executado! arquivo: %s; tempo de espera: %d; makespan: %ld segundos\n\n", current_job->job, current_job->exec_file, current_job->seconds_to_wait, current_job->finish_time - current_job->start_time);
   v_sem(current_job_sem_id); /* libera current_job */
+  for (i=0;i<16;i++) {
+    process_table[i].recebeu = 1;
+  }
+  v_sem(turno_sem_id); /* Apenas uma thread do scalonador acessa por vez */
 }
 
 int main(int argc, char const *argv[]) {
@@ -164,7 +174,7 @@ int main(int argc, char const *argv[]) {
 
     id = fork();
     if (id == 0) {
-      printf("Esperando %d segundo para executar: %s\n", msg_received.seconds_to_wait, msg_received.program_name);
+      printf("Esperando %d segundo para executar: %s\n\n", msg_received.seconds_to_wait, msg_received.program_name);
       p_sem(job_counter_sem_id);
       msg_received.job_number = *job_counter;
       *job_counter = *job_counter + 1;

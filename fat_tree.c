@@ -26,5 +26,27 @@ void fat_tree() {
   printf("utilizando fat_tree\n\n");
   recupera_memoria_compartilhada_fat_tree();
   /* codigo */
+  process_table[0].vizinho[0] = 1;
+  process_table[0].vizinho[1] = 2;
+
+  process_table[1].vizinho[0] = 3;
+  process_table[1].vizinho[1] = 4;
+
+  process_table[2].vizinho[0] = 5;
+  process_table[2].vizinho[1] = 6;
+
+  process_table[3].vizinho[0] = 7;
+  process_table[3].vizinho[1] = 8;
+
+  process_table[4].vizinho[0] = 9;
+  process_table[4].vizinho[1] = 10;
+
+  process_table[5].vizinho[0] = 11;
+  process_table[5].vizinho[1] = 12;
+
+  process_table[6].vizinho[0] = 13;
+  process_table[6].vizinho[1] = 14;
+
+  process_table[7].vizinho[0] = 15;
 }
 
