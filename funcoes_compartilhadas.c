@@ -23,3 +23,14 @@ void recupera_memoria_compartilhada(Process *process_table) {
   }
   process_table = (Process *) shmat(process_table_id, 0, 0777);
 }
+
+/* verifica se todos os genrentes de execucao estao livres */
+int check_todos_os_processos_livres(Process *process_table) {
+  int i;
+  for (i=0;i<16;i++) {
+    if (process_table[i].status == 0) {
+      return -1;
+    }
+  }
+  return 1;
+}

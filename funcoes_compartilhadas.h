@@ -12,4 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void recupera_memoria_compartilhada();
+void recupera_memoria_compartilhada(Process *process_table);
+
+int check_todos_os_processos_livres(Process *process_table);
