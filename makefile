@@ -20,10 +20,10 @@ test:
 	./executa_postergado hello2 3
 
 hypercube:
-	./escalonador hypercube
+	./escalonador hypercube &
 
 torus:
-	./escalonador torus
+	./escalonador torus &
 
 fat_tree:
-	./escalonador fat_tree
+	./escalonador fat_tree &
