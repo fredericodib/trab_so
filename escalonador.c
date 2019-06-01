@@ -151,10 +151,9 @@ void run_delayed() {
 }
 
 int main(int argc, char const *argv[]) {
-  int id_fila, id, job_counter_sem_id, process_job_done_id;
+  int id_fila, id, process_job_done_id;
 
   reseta_semaforos_all();
-  job_counter_sem_id = create_semaphore( JOB_COUNTER_SEM );
   process_job_done_id = create_semaphore( PROCESS_JOB_DONE_SEM );
   p_sem(process_job_done_id); /* inicializa como 0 */
 
@@ -174,11 +173,6 @@ int main(int argc, char const *argv[]) {
 
     id = fork();
     if (id == 0) {
-      printf("Esperando %d segundo para executar: %s\n\n", msg_received.seconds_to_wait, msg_received.program_name);
-      p_sem(job_counter_sem_id);
-      msg_received.job_number = *job_counter;
-      *job_counter = *job_counter + 1;
-      v_sem(job_counter_sem_id);
       sleep(msg_received.seconds_to_wait);
       run_delayed();
       exit(0);
