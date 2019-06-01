@@ -72,7 +72,7 @@ void cria_processos() {
     if (pid == 0) {
       number[0] = (char)i;
       number[1] = '\n';
-      execl("./gerente_execucao", "gerente_execucao", number, (char *) 0);
+      execl("./gerente_execucao", "gerente_execucao", number, "&", (char *) 0);
       break;
     } else {
       process_table[i].pid = pid;

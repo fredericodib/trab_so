@@ -78,7 +78,7 @@ void executa_arquivo() {
   printf("Job %d começa a executar\n", current_job->job);
   pid = fork();
   if (pid == 0) {
-    execl(current_job->exec_file, current_job->exec_file, (char *) 0);
+    execl(current_job->exec_file, current_job->exec_file, "&", (char *) 0);
     exit(0);
   }
   wait(&pid);
@@ -107,7 +107,7 @@ void recebe_sinal(int signal) {
 
 int main(int argc, char const *argv[]) {
   signal(SIGUSR1, recebe_sinal);
-  if (argc !=2 ) { /* verifica numero de argumentos */
+  if (argc !=3 ) { /* verifica numero de argumentos */
     printf("Quantidade de argumentos inválida\n");
     exit(1);
   }
