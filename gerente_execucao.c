@@ -11,7 +11,6 @@
 #include "structs.h"
 #include "funcoes_compartilhadas.c"
 #include "semaphore.c"
-#include "wait.h"
 
 Process *process_table;
 Job *current_job;
