@@ -15,3 +15,10 @@
   - fat_tree
 - ./executa_postergado hello 10
 - ./executa_postergado hello2 3
+
+
+
+# TODO
+    - Trocar ordem de execução de executa_postergado
+    - Executar em background
+    - Shutdown
