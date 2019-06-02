@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include <time.h>
 #include "structs.h"
 #include "funcoes_compartilhadas.c"
