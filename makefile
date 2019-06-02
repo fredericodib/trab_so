@@ -1,7 +1,9 @@
 program:
+	rm -f hello hello2 hello3 escalonador executa_postergado gerente_execucao shutdown
 	gcc -Wall -o executa_postergado executa_postergado.c
 	gcc -Wall -o escalonador escalonador.c
 	gcc -Wall -o gerente_execucao gerente_execucao.c
+	gcc -Wall -o shutdown shutdown.c
 
 executa_postergado.o: executa_postergado.c
 	gcc -Wall -o executa_postergado executa_postergado.c
@@ -9,8 +11,6 @@ escalonador.o: escalonador.c
 	gcc -Wall -o escalonador escalonador.c
 gerente_execucao.o: gerente_execucao.c
 	gcc -Wall -o gerente_execucao gerente_execucao.c
-
-
 
 test:
 	gcc -Wall -o hello hello.c
@@ -28,3 +28,6 @@ torus:
 
 fat_tree:
 	./escalonador fat_tree &
+
+clean:
+	rm -f hello hello2 hello3 escalonador executa_postergado gerente_execucao shutdown
