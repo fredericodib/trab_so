@@ -18,6 +18,7 @@ test:
 	gcc -Wall -o hello3 hello3.c
 	./executa_postergado hello 10
 	./executa_postergado hello2 3
+	./executa_postergado hello3 6
 
 hypercube:
 	./escalonador hypercube &
