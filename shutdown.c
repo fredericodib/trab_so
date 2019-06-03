@@ -1,3 +1,8 @@
+/*
+Alunos:
+- Frederico Pinheiro Dib - 15/0125925
+- Renan Rocha Reboredo - 130/131865
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

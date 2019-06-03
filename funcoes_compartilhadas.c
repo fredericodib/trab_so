@@ -1,3 +1,8 @@
+/*
+Alunos:
+- Frederico Pinheiro Dib - 15/0125925
+- Renan Rocha Reboredo - 130/131865
+*/
 #define PROCESS_TABLE 0x199542
 #define JOB_COUNTER 0x194542
 #define CURRENT_JOB 0x259542

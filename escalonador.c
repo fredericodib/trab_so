@@ -1,3 +1,8 @@
+/*
+Alunos:
+- Frederico Pinheiro Dib - 15/0125925
+- Renan Rocha Reboredo - 130/131865
+*/
 #define QUEUE_KEY_AT 0x1332624
 
 #include <stdio.h>

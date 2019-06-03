@@ -1,3 +1,8 @@
+# Alunos
+
+- Frederico Pinheiro Dib - 15/0125925
+- Renan Rocha Reboredo - 130/131865
+
 # Compilar
 
 - gcc -Wall -o executa_postergado executa_postergado.c
@@ -16,9 +21,8 @@
 - ./executa_postergado hello 10
 - ./executa_postergado hello2 3
 
-
-
 # TODO
+
     - Trocar ordem de execução de executa_postergado
     - Executar em background
     - Shutdown
