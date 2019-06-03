@@ -7,6 +7,9 @@
 #define JOB_COUNTER_SEM 0x7495871
 #define CURRENT_JOB_SEM 0x7435871
 #define TURNO_SEM 0x7464871
+#define SCHEDULER_PID_SEM 0x7483871
+#define SCHEDULER_PID 0x1991222
+#define JOB_TABLE 0x19E542
 
 #include <stdio.h>
 #include <string.h>

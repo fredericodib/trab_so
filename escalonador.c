@@ -18,6 +18,7 @@
 #include "torus.c"
 
 Process *process_table;
+Job *job_table;
 int *job_counter;
 Job *current_job;
 Message msg_received;
@@ -38,7 +39,7 @@ void rcv_executa_postergado_msg(int id_fila) {
 
 /* deixa process_table, job_counter e current_job compartilhadas */
 void cria_memoria_compartilhada() {
-  int process_table_id, job_counter_id, current_job_id;
+  int process_table_id, job_counter_id, current_job_id, job_table_id;
 
   process_table_id = shmget( PROCESS_TABLE, 16 * sizeof(Process), IPC_CREAT | 0700);
   if (process_table_id < 0) {
@@ -46,6 +47,13 @@ void cria_memoria_compartilhada() {
     exit(1);
   }
   process_table = (Process *) shmat(process_table_id, 0, 0777);
+
+  job_table_id = shmget( JOB_TABLE, 100 * sizeof(Job), IPC_CREAT | 0700);
+  if (job_table_id < 0) {
+    printf("error ao criar memoria compartilhada JOB_TABLE\n");
+    exit(1);
+  }
+  job_table = (Job *) shmat(job_table_id, 0, 0777);
 
   job_counter_id = shmget( JOB_COUNTER, sizeof(int), IPC_CREAT | 0700);
   if (job_counter_id < 0) {
@@ -101,13 +109,17 @@ void executa_topoligia(char const topologia[]) {
 }
 
 void reseta_semaforos_all() {
-  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, job_counter_sem_id, turno_sem_id;
+  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id,
+      process_table_sem_id, job_counter_sem_id, turno_sem_id, scheduler_pid_sem_id;
+
   process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
   process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
   current_job_sem_id = create_semaphore( CURRENT_JOB_SEM );
   process_table_sem_id = create_semaphore( PROCESS_TABLE_SEM );
   job_counter_sem_id = create_semaphore( JOB_COUNTER_SEM );
+  scheduler_pid_sem_id = create_semaphore( SCHEDULER_PID_SEM );
   turno_sem_id = create_semaphore( TURNO_SEM );
+  delete_semaphore( scheduler_pid_sem_id );
   delete_semaphore( process_free_sem_id );
   delete_semaphore( process_job_done_sem_id );
   delete_semaphore( current_job_sem_id );
@@ -117,7 +129,8 @@ void reseta_semaforos_all() {
 }
 
 void run_delayed() {
-  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, pid, i, turno_sem_id;
+  int process_free_sem_id, process_job_done_sem_id, current_job_sem_id, process_table_sem_id, pid, i, turno_sem_id, job_table_id;
+
   process_free_sem_id = create_semaphore( PROCESS_FREEE_SEM );
   process_job_done_sem_id = create_semaphore( PROCESS_JOB_DONE_SEM );
   current_job_sem_id = create_semaphore( CURRENT_JOB_SEM );
@@ -143,7 +156,20 @@ void run_delayed() {
 
   p_sem(current_job_sem_id); /* acessa current_job */
   printf("\nJob %d executado! arquivo: %s; tempo de espera: %d; makespan: %ld segundos\n\n", current_job->job, current_job->exec_file, current_job->seconds_to_wait, current_job->finish_time - current_job->start_time);
+  job_table_id = shmget( JOB_TABLE, 100 * sizeof(Job), IPC_CREAT | 0700);
+  if (job_table_id < 0) {
+    printf("error ao criar memoria compartilhada JOB_TABLE\n");
+    exit(1);
+  }
+  job_table = (Job *) shmat(job_table_id, 0, 0777);
+
+  job_table[current_job->job].job = current_job->job;
+  job_table[current_job->job].finish_time = current_job->finish_time;
+  job_table[current_job->job].start_time = current_job->start_time;
+  job_table[current_job->job].seconds_to_wait = current_job->seconds_to_wait;
+  strcpy(job_table[current_job->job].exec_file, current_job->exec_file);
   v_sem(current_job_sem_id); /* libera current_job */
+
   for (i=0;i<16;i++) {
     process_table[i].recebeu = 1;
   }
@@ -151,10 +177,12 @@ void run_delayed() {
 }
 
 int main(int argc, char const *argv[]) {
-  int id_fila, id, process_job_done_id;
+  int id_fila, id, process_job_done_id, scheduler_pid_sem_id, scheduler_pid_id, pid;
+  int* scheduler_pid;
 
   reseta_semaforos_all();
   process_job_done_id = create_semaphore( PROCESS_JOB_DONE_SEM );
+  scheduler_pid_sem_id = create_semaphore( SCHEDULER_PID_SEM );
   p_sem(process_job_done_id); /* inicializa como 0 */
 
   if (argc !=2 ) {
@@ -165,6 +193,13 @@ int main(int argc, char const *argv[]) {
   cria_memoria_compartilhada();
   cria_processos();
   executa_topoligia(argv[1]);
+
+  p_sem(scheduler_pid_sem_id);
+  pid = getpid();
+  scheduler_pid_id = shmget( SCHEDULER_PID, sizeof(int), IPC_CREAT | 0700);
+  scheduler_pid = (int*) shmat(scheduler_pid_id, 0, 0777);
+  *scheduler_pid = pid;
+  v_sem(scheduler_pid_sem_id);
 
   printf("Esperando por mensagem\n\n");
   while(1) {
