@@ -5,7 +5,6 @@ typedef struct message {
   long pid;
   char program_name[30];
   int seconds_to_wait;
-  int destination;
   int job_number;
 } Message;
 
